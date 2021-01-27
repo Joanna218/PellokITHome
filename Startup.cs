@@ -9,48 +9,74 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+// 新增
+using PellokITHome.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace PellokITHome
 {
-    public class Startup
+  public class Startup
+  {
+    public Startup(IConfiguration configuration, IWebHostEnvironment env)
     {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
-
-        public IConfiguration Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddRazorPages();
-        }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
-
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
-
-            app.UseRouting();
-
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapRazorPages();
-            });
-        }
+      Environment = env;
+      Configuration = configuration;
     }
+
+    public IConfiguration Configuration { get; }
+    public IWebHostEnvironment Environment { get; }
+
+    // This method gets called by the runtime. Use this method to add services to the container.
+    public void ConfigureServices(IServiceCollection services)
+    {
+      services.AddRazorPages();
+
+      // 加入服務
+      if (Environment.IsDevelopment())
+      {
+        services.AddDbContext<PellokITHomeContext>(options =>
+            options.UseSqlite(Configuration.GetConnectionString("ArticleContext")));
+      }
+      else
+      {
+        services.AddDbContext<PellokITHomeContext>(options =>
+            options.UseSqlite(Configuration.GetConnectionString("ArticleContext")));
+      }
+
+      /*
+        // 註冊資料庫 DbSet 內容
+        services.AddDbContext<PellokITHomeContext>(options =>
+            options.UseSqlite(Configuration.GetConnectionString("ArticleContext")));
+        // options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+      */
+    }
+
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+      if (env.IsDevelopment())
+      {
+        app.UseDeveloperExceptionPage();
+      }
+      else
+      {
+        app.UseExceptionHandler("/Error");
+        // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+        app.UseHsts();
+      }
+
+      app.UseHttpsRedirection();
+      app.UseStaticFiles();
+
+      app.UseRouting();
+
+      app.UseAuthorization();
+
+      app.UseEndpoints(endpoints =>
+      {
+        endpoints.MapRazorPages();
+      });
+    }
+  }
 }
